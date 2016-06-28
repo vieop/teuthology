@@ -801,7 +801,7 @@ def syslog(ctx, config):
                     'gzip',
                     '--',
                 ],
-                wait=False,
+                check_status=False,
             ),
         )
 
