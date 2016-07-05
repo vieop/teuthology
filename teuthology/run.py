@@ -198,7 +198,6 @@ def get_initial_tasks(lock, config, machine_type):
             {'internal.push_inventory': None},
             {'internal.serialize_remote_roles': None},
             {'internal.check_conflict': None},
-            {'kernel.install_latest_rh_kernel': None}
         ])
 
     if ('roles' in config and
@@ -232,6 +231,7 @@ def get_initial_tasks(lock, config, machine_type):
             {'pcp': None},
             {'selinux': None},
             {'ansible.cephlab': None},
+            {'kernel.install_latest_rh_kernel': None}
             {'clock.check': None}
         ])
 
