@@ -318,10 +318,7 @@ def nuke_helper(ctx, should_unlock):
     add_remotes(ctx, None)
     connect(ctx, None)
     clear_firewall(ctx)
-    shutdown_daemons(ctx)
-    kill_valgrind(ctx)
-    # Try to remove packages before reboot
-    remove_installed_packages(ctx)
+    log.info("Cleared teuthology firewall rules.")
     remotes = ctx.cluster.remotes.keys()
     reboot(ctx, remotes)
     # shutdown daemons again incase of startup
