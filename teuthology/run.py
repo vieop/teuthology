@@ -219,6 +219,7 @@ def get_initial_tasks(lock, config, machine_type):
             {'internal.syslog': None},
         ])
     init_tasks.append({'internal.timer': None})
+    init_tasks.append({'internal.ntp_resync': None})
     init_tasks.append({'internal.setup_rh_repo': None})
     init_tasks.append({'internal.setup_cdn_repo': None})
     if 'test-mode' in config:

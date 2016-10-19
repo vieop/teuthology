@@ -306,6 +306,20 @@ def timer(ctx, config):
         ctx.summary['duration'] = duration
 
 @contextlib.contextmanager
+def ntp_resync(ctx, config):
+    """
+    force ntp resyn
+    """
+    
+    ctx.cluster.run(args=['sudo', 'systemctl', 'stop', 'ntpd'],
+                           check_status=False)
+    ctx.cluster.run(args=['sudo', 'ntpd', '-gq'],
+                           check_status=False)
+    ctx.cluster.run(args=['sudo', 'systemctl', 'start', 'ntpd'],
+                           check_status=False)
+    yield
+
+@contextlib.contextmanager
 def setup_cdn_repo(ctx, config):
     """
      setup repo if set_cdn_repo exists in config
