@@ -21,6 +21,7 @@ from teuthology.exceptions import VersionNotFoundError
 from teuthology.job_status import get_status, set_status
 from teuthology.config import config as teuth_config
 from teuthology.parallel import parallel
+from teuthology import contextutil
 from ..orchestra import cluster, remote, run
 from .. import report
 from . import ansible
@@ -304,6 +305,22 @@ def timer(ctx, config):
         log.info('Duration was %f seconds', duration)
         ctx.summary['duration'] = duration
 
+@contextlib.contextmanager
+def setup_cdn_repo(ctx, config):
+    """
+     setup repo if set_cdn_repo exists in config
+     set_cdn_repo:
+        rhbuild: 2.0 or 1.3.2 or 1.3.3
+    """
+    # do import of task here since the qa task path should be set here
+    if ctx.config.get('set-cdn-repo'):
+        from tasks import set_repo
+        config = ctx.config.get('set-cdn-repo')
+        with contextutil.nested(
+        lambda: set_repo.task(ctx=ctx, config=config)):
+            yield
+    else:
+        yield
 
 @contextlib.contextmanager
 def setup_rh_repo(ctx, config):

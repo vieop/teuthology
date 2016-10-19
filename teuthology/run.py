@@ -17,6 +17,7 @@ from .results import email_results
 from .config import FakeNamespace
 from .config import config as teuth_config
 
+
 log = logging.getLogger(__name__)
 
 
@@ -222,6 +223,7 @@ def get_initial_tasks(lock, config, machine_type):
         ])
     init_tasks.append({'internal.timer': None})
     init_tasks.append({'internal.setup_rh_repo': None})
+    init_tasks.append({'internal.setup_cdn_repo': None})
     if 'test-mode' in config:
         init_tasks.extend([
             {'clock.check': None}
