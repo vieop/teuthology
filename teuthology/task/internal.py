@@ -336,6 +336,23 @@ def setup_cdn_repo(ctx, config):
     else:
         yield
 
+
+@contextlib.contextmanager
+def setup_additional_repo(ctx, config):
+    """
+    set additional repo's for testing
+    """
+    if ctx.config.get('set-add-repo'):
+        add_repo = ctx.config.get('set-add-repo')
+        for remote in ctx.cluster.remotes.iterkeys():
+            if remote.os.package_type == 'rpm':
+                remote.run(args=['sudo', 'wget', '-O', '/etc/yum.repos.d/add.repo',
+                                 add_repo])
+                remote.run(args=['sudo', 'yum', 'update', 'metadata'])
+
+    yield
+
+
 @contextlib.contextmanager
 def setup_rh_repo(ctx, config):
     """
