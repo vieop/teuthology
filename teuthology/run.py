@@ -226,6 +226,7 @@ def get_initial_tasks(lock, config, machine_type):
     init_tasks.append({'internal.setup_rh_repo': None})
     init_tasks.append({'internal.setup_cdn_repo': None})
     init_tasks.append({'internal.setup_additional_repo': None})
+    init_tasks.append({'kernel.install_latest_rh_kernel': None})
     if 'test-mode' in config:
         init_tasks.extend([
             {'clock.check': None}
@@ -235,7 +236,6 @@ def get_initial_tasks(lock, config, machine_type):
             {'pcp': None},
             {'selinux': None},
             {'ansible.cephlab': None},
-            {'kernel.install_latest_rh_kernel': None},
             {'clock.check': None}
         ])
 
