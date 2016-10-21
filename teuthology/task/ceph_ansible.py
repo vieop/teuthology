@@ -77,7 +77,9 @@ class CephAnsible(Task):
         super(CephAnsible, self).__init__(ctx, config)
         config = config or dict()
         if 'playbook' not in config:
-            self.config['playbook'] = self._default_playbook
+            self.playbook = self._default_playbook
+        else:
+	    self.playbook = self.config['playbook']
         if 'repo' not in config:
             self.config['repo'] = os.path.join(teuth_config.ceph_git_base_url,
                                                'ceph-ansible.git')
@@ -126,16 +128,16 @@ class CephAnsible(Task):
         self.installer_node = ceph_installer
         if self.config.get('rhbuild'):
             ceph_installer.put_file(args[5], '/tmp/inven.yml')
-            ceph_installer.put_file(args[8], '/tmp/site.yml')
+            ceph_installer.put_file(args[6], '/tmp/site.yml')
             ceph_installer.run(args=['cp', '-R',
                                      '/usr/share/ceph-ansible', '.'])
-            ceph_installer.run(args=('cat', args[8], run.Raw('>'),
+            ceph_installer.run(args=('cat', args[6], run.Raw('>'),
                                      'ceph-ansible/site.yml'))
             ceph_installer.run(args=('cat', args[5]))
             ceph_installer.run(args=('cat', 'ceph-ansible/site.yml'))
             if self.config.get('group_vars'):
                 self.set_groupvars(ceph_installer)
-            args[8] = 'site.yml'
+            args[6] = 'site.yml'
             out = StringIO()
             str_args = ' '.join(args)
             ceph_installer.run(args=['cd', 'ceph-ansible', run.Raw(';'),
@@ -168,22 +170,25 @@ class CephAnsible(Task):
                                          'libffi-dev',
                                          'python-dev'])
             ansible_repo = self.config['repo']
-            branch = None
+            branch = '-b master'
             if self.config.get('branch'):
                 branch = ' -b ' + self.config.get('branch')
+            ceph_installer.run(args=['rm', '-rf',
+			             run.Raw('~/ceph-ansible'),
+                                    ], check_status=False)
             ceph_installer.run(args=['mkdir',
                                      run.Raw('~/ceph-ansible'),
                                      run.Raw(';'),
                                      'git',
                                      'clone',
-                                     branch,
+                                     run.Raw(branch),
                                      run.Raw(ansible_repo), ])
             # copy the inventory file to installer node
             ceph_installer.put_file(args[5], './ceph-ansible/inven.yml')
             # copy the site file
-            ceph_installer.put_file(args[8], './ceph-ansible/site.yml')
+            ceph_installer.put_file(args[6], './ceph-ansible/site.yml')
             args[5] = 'inven.yml'
-            args[8] = 'site.yml'
+            args[6] = 'site.yml'
             out = StringIO()
             str_args = ' '.join(args)
             ceph_installer.run(args=[run.Raw('cd ~/ceph-ansible'),
@@ -245,6 +250,20 @@ class CephAnsible(Task):
         hosts_stringio.seek(0)
         self.inventory = self._write_hosts_file(hosts_stringio.read().strip())
         self.generated_inventory = True
+
+    def begin(self):
+        super(CephAnsible, self).begin()
+        self.execute_playbook()
+
+    def _write_hosts_file(self, content):
+        """
+        Actually write the hosts file
+        """
+        hosts_file = NamedTemporaryFile(prefix="teuth_ansible_hosts_",
+                                        delete=False)
+        hosts_file.write(content)
+        hosts_file.flush()
+        return hosts_file.name
 
     def wait_for_ceph_health(self):
         with contextutil.safe_while(sleep=15, tries=6,
