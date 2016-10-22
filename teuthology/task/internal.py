@@ -394,7 +394,21 @@ def setup_rh_repo(ctx, config):
                                  run.Raw('/etc/yum.repos.d/rh*.repo'),
                                  ], check_status=False)
 
-
+@contextlib.contextmanager
+def setup_rh_pkgs(ctx, config):
+    """
+    Setup packages for rh and install from
+    cdn source instead of epel
+    """
+    pkgs = ['qemu-kvm', 'genisoimage', 'openssl', 'xfsprogs', 'xfsprogs-devel',
+            'nfs-utils', 'valgrind', 'httpd', 'httpd-devel', 'httpd-tools']
+    pkgs_to_install = str.join(' ', pkgs)
+    for remote in ctx.cluster.remotes.iterkeys():
+        if remote.os.package_type == 'rpm':
+            remote.run(args=['sudo', 'yum', 'install', '-y',
+                             run.Raw(pkgs_to_install)], check_status=False)
+    yield
+    
 def _get_repos_to_use(base_url, repos):
     repod = dict()
     for repo in repos:

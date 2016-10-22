@@ -219,11 +219,12 @@ def get_initial_tasks(lock, config, machine_type):
             {'internal.syslog': None},
         ])
     init_tasks.append({'internal.timer': None})
-    init_tasks.append({'internal.ntp_resync': None})
     init_tasks.append({'internal.setup_rh_repo': None})
     init_tasks.append({'internal.setup_cdn_repo': None})
     init_tasks.append({'internal.setup_additional_repo': None})
+    init_tasks.append({'internal.setup_rh_pkgs': None})
     init_tasks.append({'kernel.install_latest_rh_kernel': None})
+    init_tasks.append({'internal.ntp_resync': None})
     if 'test-mode' in config:
         init_tasks.extend([
             {'clock.check': None}
