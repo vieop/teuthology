@@ -208,6 +208,7 @@ class CephAnsible(ansible.Ansible):
             mons='mon',
             mdss='mds',
             osds='osd',
+            rgws='rgw',
             # client='client',
         )
         hosts_dict = dict()
