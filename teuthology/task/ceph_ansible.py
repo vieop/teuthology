@@ -201,6 +201,7 @@ class CephAnsible(Task):
                                      run.Raw(';'),
                                      'pip',
                                      'install',
+                                     'setuptools==11.3',
                                      'ansible==2.1',
                                      run.Raw(';'),
                                      run.Raw(str_args)
