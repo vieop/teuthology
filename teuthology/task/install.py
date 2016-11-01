@@ -873,7 +873,8 @@ def rh_install_pkgs(ctx, remote, version, rh_ds_yaml):
     installed_version = packaging.get_package_version(remote, 'ceph-common')
     log.info("Node: {n} Ceph version installed is {v}".format(n=remote.shortname,
                                                               v=version))
-    if rh_version_check[version] == installed_version:
+    req_ver = rh_version_check[version]
+    if installed_version.startswith(req_ver):
         log.info("Installed version matches on %s", remote.shortname)
     else:
         raise RuntimeError("Version check failed on node %s", remote.shortname)
