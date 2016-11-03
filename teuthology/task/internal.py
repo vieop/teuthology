@@ -358,6 +358,9 @@ def setup_rh_repo(ctx, config):
     """
     Setup repo based on redhat nodes
     """
+    if ctx.config.get('set-cdn-repo'):
+        log.info("CDN repo already set, skipping rh repo")
+        yield
     for remote in ctx.cluster.remotes.iterkeys():
         if remote.os.package_type == 'rpm':
             base_url = ctx.config.get('base_repo_url', '')
