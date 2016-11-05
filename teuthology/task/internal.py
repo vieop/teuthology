@@ -392,7 +392,7 @@ def setup_rh_repo(ctx, config):
     if ctx.config.get('set-cdn-repo'):
         log.info("CDN repo already set, skipping rh repo")
         yield
-    setup_internal_repo(ctx, config)
+    setup_latest_rh_repo(ctx, config)
     try:
         yield
     finally:
