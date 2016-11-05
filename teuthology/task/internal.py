@@ -352,6 +352,38 @@ def setup_additional_repo(ctx, config):
 
     yield
 
+def setup_latest_rh_repo(ctx, config):
+    """
+    Setup repo based on redhat nodes
+    """
+    with parallel():
+        for remote in ctx.cluster.remotes.iterkeys():
+            if remote.os.package_type == 'rpm':
+                base_url = ctx.config.get('base_repo_url', '')
+                installer_url = ctx.config.get('installer_repo_url', '')
+                repos = ['MON', 'OSD', 'Tools', 'Calamari', 'Installer']
+                installer_repos = ['Agent', 'Main', 'Installer']
+                if ctx.config.get('base_rh_repos'):
+                    repos = ctx.config.get('base_rh_repos')
+                if ctx.config.get('installer_repos'):
+                    installer_repos = ctx.config.get('installer_repos')
+                # create base repo
+                if base_url.startswith('http'):
+                    repo_to_use = _get_repos_to_use(base_url, repos)
+                    base_repo_file = NamedTemporaryFile(delete=False)
+                    _create_temp_repo_file(repo_to_use, base_repo_file)
+                    remote.put_file(base_repo_file.name, base_repo_file.name)
+                    remote.run(args=['sudo', 'cp', base_repo_file.name,
+                                     '/etc/yum.repos.d/rh_ceph.repo'])
+                if installer_url.startswith('http'):
+                    irepo_to_use = _get_repos_to_use(
+                        installer_url, installer_repos)
+                    installer_file = NamedTemporaryFile(delete=False)
+                    _create_temp_repo_file(irepo_to_use, installer_file)
+                    remote.put_file(installer_file.name, installer_file.name)
+                    remote.run(args=['sudo', 'cp', installer_file.name,
+                                     '/etc/yum.repos.d/rh_inst.repo'])
+
 
 @contextlib.contextmanager
 def setup_rh_repo(ctx, config):
@@ -361,32 +393,7 @@ def setup_rh_repo(ctx, config):
     if ctx.config.get('set-cdn-repo'):
         log.info("CDN repo already set, skipping rh repo")
         yield
-    for remote in ctx.cluster.remotes.iterkeys():
-        if remote.os.package_type == 'rpm':
-            base_url = ctx.config.get('base_repo_url', '')
-            installer_url = ctx.config.get('installer_repo_url', '')
-            repos = ['MON', 'OSD', 'Tools', 'Calamari', 'Installer']
-            installer_repos = ['Agent', 'Main', 'Installer']
-            if ctx.config.get('base_rh_repos'):
-                repos = ctx.config.get('base_rh_repos')
-            if ctx.config.get('installer_repos'):
-                installer_repos = ctx.config.get('installer_repos')
-            # create base repo
-            if base_url.startswith('http'):
-                repo_to_use = _get_repos_to_use(base_url, repos)
-                base_repo_file = NamedTemporaryFile(delete=False)
-                _create_temp_repo_file(repo_to_use, base_repo_file)
-                remote.put_file(base_repo_file.name, base_repo_file.name)
-                remote.run(args=['sudo', 'cp', base_repo_file.name,
-                                 '/etc/yum.repos.d/rh_ceph.repo'])
-            if installer_url.startswith('http'):
-                irepo_to_use = _get_repos_to_use(
-                    installer_url, installer_repos)
-                installer_file = NamedTemporaryFile(delete=False)
-                _create_temp_repo_file(irepo_to_use, installer_file)
-                remote.put_file(installer_file.name, installer_file.name)
-                remote.run(args=['sudo', 'cp', installer_file.name,
-                                 '/etc/yum.repos.d/rh_inst.repo'])
+    setup_internal_repo(ctx, config)
     try:
         yield
     finally:
@@ -406,10 +413,11 @@ def setup_rh_pkgs(ctx, config):
     pkgs = ['qemu-kvm', 'genisoimage', 'openssl', 'xfsprogs', 'xfsprogs-devel',
             'nfs-utils', 'valgrind', 'httpd', 'httpd-devel', 'httpd-tools']
     pkgs_to_install = str.join(' ', pkgs)
-    for remote in ctx.cluster.remotes.iterkeys():
-        if remote.os.package_type == 'rpm':
-            remote.run(args=['sudo', 'yum', 'install', '-y',
-                             run.Raw(pkgs_to_install)], check_status=False)
+    with parallel():
+        for remote in ctx.cluster.remotes.iterkeys():
+            if remote.os.package_type == 'rpm':
+                remote.run(args=['sudo', 'yum', 'install', '-y',
+                                 run.Raw(pkgs_to_install)], check_status=False)
     yield
     
 def _get_repos_to_use(base_url, repos):
