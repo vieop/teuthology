@@ -328,7 +328,7 @@ def setup_cdn_repo(ctx, config):
     """
     # do import of task here since the qa task path should be set here
     if ctx.config.get('set-cdn-repo'):
-        from tasks import set_repo
+        from tasks.set_repo import set_cdn_repo
         config = ctx.config.get('set-cdn-repo')
         with contextutil.nested(
         lambda: set_repo.task(ctx=ctx, config=config)):
