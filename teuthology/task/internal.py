@@ -591,6 +591,9 @@ def check_conflict(ctx, config):
     """
     Note directory use conflicts and stale directories.
     """
+    if ctx.config.get('check-stale') is False:
+        log.info('stale cephtest dir checking disabled.')
+        return
     log.info('Checking for old test directory...')
     testdir = misc.get_testdir(ctx)
     processes = ctx.cluster.run(
