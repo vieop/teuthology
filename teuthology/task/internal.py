@@ -356,6 +356,8 @@ def setup_latest_rh_repo(ctx, config):
     with parallel():
         for remote in ctx.cluster.remotes.iterkeys():
             if remote.os.package_type == 'rpm':
+                remote.run(args=['sudo', 'subscription-manager', 'repos',
+                                 run.Raw('--disable=*ceph*')])
                 base_url = ctx.config.get('base_repo_url', '')
                 installer_url = ctx.config.get('installer_repo_url', '')
                 repos = ['MON', 'OSD', 'Tools', 'Calamari', 'Installer']
