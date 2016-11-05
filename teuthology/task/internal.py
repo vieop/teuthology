@@ -326,15 +326,12 @@ def setup_cdn_repo(ctx, config):
      set_cdn_repo:
         rhbuild: 2.0 or 1.3.2 or 1.3.3
     """
-    # do import of task here since the qa task path should be set here
+    # do import of tasks here since the qa task path should be set here
     if ctx.config.get('set-cdn-repo'):
         from tasks.set_repo import set_cdn_repo
         config = ctx.config.get('set-cdn-repo')
-        with contextutil.nested(
-        lambda: set_repo.task(ctx=ctx, config=config)):
-            yield
-    else:
-        yield
+        set_cdn_repo(ctx, config)
+    yield
 
 
 @contextlib.contextmanager
