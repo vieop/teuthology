@@ -392,16 +392,17 @@ def setup_rh_repo(ctx, config):
     if ctx.config.get('set-cdn-repo'):
         log.info("CDN repo already set, skipping rh repo")
         yield
-    setup_latest_rh_repo(ctx, config)
-    try:
-        yield
-    finally:
-        log.info("Cleaning up repo's")
-        for remote in ctx.cluster.remotes.iterkeys():
-            if remote.os.package_type == 'rpm':
-                remote.run(args=['sudo', 'rm',
-                                 run.Raw('/etc/yum.repos.d/rh*.repo'),
-                                 ], check_status=False)
+    else:
+        setup_latest_rh_repo(ctx, config)
+        try:
+            yield
+        finally:
+            log.info("Cleaning up repo's")
+            for remote in ctx.cluster.remotes.iterkeys():
+                if remote.os.package_type == 'rpm':
+                    remote.run(args=['sudo', 'rm',
+                                     run.Raw('/etc/yum.repos.d/rh*.repo'),
+                                     ], check_status=False)
 
 @contextlib.contextmanager
 def setup_rh_pkgs(ctx, config):
